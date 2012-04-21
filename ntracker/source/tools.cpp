@@ -45,7 +45,9 @@ void lowercase(char *str)
 
 void dbgWaitButton(void)
 {
+#ifdef DEBUG
 	iprintf("press the any key...\n");
+#endif
 	//scanKeys();
 	while(! (keysDown()&KEY_A) ) swiWaitForVBlank(); //scanKeys();
 }

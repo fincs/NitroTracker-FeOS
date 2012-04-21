@@ -200,7 +200,9 @@ void FileSelector::read_directory(void)
 //iprintf("%d\n", __LINE__);
 
 	if( chdir(current_directory.c_str()) == -1 ) {
+#ifdef DEBUG
 		iprintf("cwd to %s failed\n", current_directory.c_str());
+#endif
 		return;
 	}
 	//iprintf("%d\n", __LINE__);
@@ -211,7 +213,9 @@ void FileSelector::read_directory(void)
 	//iprintf("%d\n", __LINE__);
 	if((dir = opendir(current_directory.c_str())) == NULL)
 	{
+#ifdef DEBUG
 		iprintf("Dir read error!\n");
+#endif
 		return;
 	}
 	//iprintf("%d\n", __LINE__);
@@ -219,7 +223,9 @@ void FileSelector::read_directory(void)
 
 	if(direntry == NULL)
 	{
+#ifdef DEBUG
 		iprintf("No files found!\n");
+#endif
 		return;
 	}
 	//iprintf("%d\n", __LINE__);

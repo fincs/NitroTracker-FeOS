@@ -77,7 +77,9 @@ fat(use_fat)
 			if(!success)
 			{
 				free(confstr);
+#ifdef DEBUG
 				iprintf("Config file invalid\n");
+#endif
 				return;
 			}
 
@@ -85,7 +87,9 @@ fat(use_fat)
 			if(!success)
 			{
 				free(confstr);
+#ifdef DEBUG
 				iprintf("Config file invalid\n");
+#endif
 				return;
 			}
 
@@ -93,7 +97,9 @@ fat(use_fat)
 			if(!success)
 			{
 				free(confstr);
+#ifdef DEBUG
 				iprintf("Config file invalid\n");
+#endif
 				return;
 			}
 			handedness = stringToHandedness(hstring);
@@ -102,7 +108,9 @@ fat(use_fat)
 			if(!success)
 			{
 				free(confstr);
+#ifdef DEBUG
 				iprintf("Config file invalid\n");
+#endif
 				return;
 			}
 			sample_preview = stringToBool(prevstring);
@@ -192,7 +200,9 @@ void Settings::write(void)
 	FILE *conf = fopen("/data/NitroTracker/NitroTracker.conf", "w");
 	if(conf == NULL)
 	{
+#ifdef DEBUG
 		printf("Error opening config for writing!\n");
+#endif
 		return;
 	}
 

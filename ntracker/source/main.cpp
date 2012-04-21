@@ -682,7 +682,9 @@ void setSong(Song *newsong)
 bool loadSample(const char *filename_with_path)
 {
 	const char *filename = strrchr(filename_with_path, '/') + 1;
+#ifdef DEBUG
 	iprintf("file: %s %s\n",filename_with_path, filename);
+#endif
 
 	bool load_success;
 	Sample *newsmp = new Sample(filename_with_path, false, &load_success);
@@ -777,7 +779,9 @@ void handleLoad(void)
 	// Debug function for fun and profit. Or is it?
 	File *file = fileselector->getSelectedFile();
 	if((file==0)||(file->is_dir == true)) {
+#ifdef DEBUG
 		printf("File fail #1\n");
+#endif
 		return;
 	}
 
@@ -824,9 +828,11 @@ void saveFile(void)
 	strcpy(pathfilename, path);
 	strcpy(pathfilename+strlen(path), filename);
 
+#ifdef DEBUG
 	printf("path %s ...\n", path);
 	printf("pathfilename %s ...\n", pathfilename);
 	iprintf("saving %s ...\n", filename);
+#endif
 
 	mb = new MessageBox(&sub_vram, "one moment", 0);
 	gui->registerOverlayWidget(mb, 0, SUB_SCREEN);
@@ -845,11 +851,11 @@ void saveFile(void)
 		song->getInstrument(state->instrument)->getSample(state->sample)->saveAsWav(pathfilename);
 	}
 
-	printf("doneQ\n");
-
 	deleteMessageBox();
 
+#ifdef DEBUG
 	iprintf("done\n");
+#endif
 
 	free(pathfilename);
 
@@ -971,7 +977,9 @@ void handleTypewriterFilenameOk(void)
 
 	char *text = tw->getText();
 	char *name = 0;
+#ifdef DEBUG
 	iprintf("%s\n", text);
+#endif
 	if(strcmp(text,"") != 0)
 	{
 		if( (rbsong->getActive() == true) && (strcmp(text+strlen(text)-3, ".xm") != 0) )
@@ -1249,7 +1257,9 @@ void handleDSMWRecv(void)
 	{
 		if(state->dsmi_recv) {
 
+#ifdef DEBUG
 			iprintf("got sth\n");
+#endif
 
 			u8 type = message & 0xF0;
 			switch(type)
@@ -1259,7 +1269,9 @@ void handleDSMWRecv(void)
 					u8 note = data1;
 					u8 volume = data2 * 2;
 					u8 channel = 255;
+#ifdef DEBUG
 					iprintf("on %d %d\n", inst, note);
+#endif
 					CommandPlayInst(inst, note, volume, channel);
 					break;
 				}
@@ -1643,11 +1655,15 @@ void handleFileChange(File file)
 			u8* testptr = (u8*)malloc(smpsize); // Try to malloc it
 			if(testptr == 0)
 			{
+#ifdef DEBUG
 				iprintf("not enough ram for preview\n");
+#endif
 			}
 			else
 			{
+#ifdef DEBUG
 				iprintf("previewing\n");
+#endif
 				free(testptr);
 
 				// Load sample
@@ -1700,7 +1716,9 @@ void handleDirChange(const char *newdir)
 
 void handlePreviewSampleFinished(void)
 {
+#ifdef DEBUG
 	iprintf("Sample finished\n");
+#endif
 	delete state->preview_sample;
 	state->preview_sample = 0;
 
@@ -2437,7 +2455,9 @@ void dsmiConnect(void)
 		showMessage("Sorry, couldn't connect.");
 		state->dsmi_connected = false;
 	} else {
+#ifdef DEBUG
 		iprintf("YAY, connected!\n");
+#endif
 		btndsmwtoggleconnect->setCaption("disconnect");
         btndsmwtoggleconnect->pleaseDraw();
         state->dsmi_connected = true;
@@ -3409,7 +3429,9 @@ void VblankHandler(void)
 
 extern "C" void debug_print_stub(char *string)
 {
+#ifdef DEBUG
 	printf("%s", string);
+#endif
 }
 
 void fadeIn(void)

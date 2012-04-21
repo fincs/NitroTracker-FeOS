@@ -119,7 +119,9 @@ Sample::Sample(const char *filename, u8 _loop, bool *_success)
 
 	if(!wav.load(filename))
 	{
+#ifdef DEBUG
 		printf("WAV loading failed\n");
+#endif
 		*_success = false;
 		return;
 	}
@@ -158,7 +160,9 @@ Sample::Sample(const char *filename, u8 _loop, bool *_success)
 	{
 		if(!convertStereoToMono())
 		{
+#ifdef DEBUG
 			printf("Stereo 2 Mono conversion failed\n");
+#endif
 			*_success = false;
 			return;
 		}
@@ -601,7 +605,9 @@ void Sample::reverse(u32 startsample, u32 endsample)
 	void *testmem = malloc( (is_16_bit?2:1) * length);
 	if(testmem == NULL)
 	{
+#ifdef DEBUG
 		iprintf("Not enough memory for reversing\n");
+#endif
 		return;
 	}
 	else
@@ -827,7 +833,9 @@ bool Sample::convertStereoToMono(void)
 	// Check if there is enough RAM for this
 	if(my_get_free_mem() < size)
 	{
+#ifdef DEBUG
 		printf("not enough ram for stereo 2 mono conversion\n");
+#endif
 		return false;
 	}
 
