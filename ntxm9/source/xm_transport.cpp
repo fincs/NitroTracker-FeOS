@@ -689,13 +689,14 @@ u16 XMTransport::load(const char *filename, Song **_song)
 // Saves a song to a file
 u16 XMTransport::save(const char *filename, Song *song)
 {
-	if(my_getUsedRam() > my_getFreeDiskSpace())
+#ifdef DEBUG
+	int freeDiskSpace = my_getFreeDiskSpace();
+	if(my_getUsedRam() > freeDiskSpace)
 	{
 		return XM_TRANSPORT_DISK_FULL;
 	}
 
-#ifdef DEBUG
-	iprintf("free disk space: %d kb\n", my_getFreeDiskSpace() / 1024);
+	iprintf("free disk space: %d kb\n", freeDiskSpace / 1024);
 #endif
 
 	my_start_malloc_invariant(); // security
