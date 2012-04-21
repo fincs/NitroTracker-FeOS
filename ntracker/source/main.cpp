@@ -760,6 +760,7 @@ void loadSong(const char* n)
 
 	if(err) {
 		// Emergency: set up an empty song
+		delete newsong;
 		newsong = new Song(10, 125);
 	}
 
@@ -2144,6 +2145,16 @@ void clipboard_alloc(u16 width, u16 height)
 	}
 	clipboard_width = width;
 	clipboard_height = height;
+}
+
+void clipboard_free()
+{
+	if(clipboard != 0) {
+		for(u16 i=0; i<clipboard_width; ++i) {
+			free(clipboard[i]);
+		}
+		free(clipboard);
+	}
 }
 
 void ptnCopy(bool cut)
@@ -3732,4 +3743,9 @@ int main(int argc, char* argv[]) {
 	delete state;
 	delete settings;
 	delete song;
+	clipboard_free();
+
+	extern bool bAllowWidgetDelete;
+	bAllowWidgetDelete = true;
+	delete gui;
 }

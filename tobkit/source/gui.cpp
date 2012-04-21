@@ -14,6 +14,18 @@ GUI::GUI()
 	}
 }
 
+bool bAllowWidgetDelete = false;
+
+GUI::~GUI()
+{
+	if (!bAllowWidgetDelete) return;
+
+	for(std::vector<Widget*>::iterator w_it=widgets_sub.begin();w_it!=widgets_sub.end();++w_it)
+		delete (*w_it);
+	for(std::vector<Widget*>::iterator w_it=widgets_main.begin();w_it!=widgets_main.end();++w_it)
+		delete (*w_it);
+}
+
 // Sets the theme - mandatory!
 void GUI::setTheme(Theme *theme_, u16 bgcolor_)
 {

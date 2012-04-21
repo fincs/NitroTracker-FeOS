@@ -21,6 +21,7 @@ Calls touched widget
 class GUI {
 	public:
 		GUI();
+		~GUI();
 
 		// Sets the theme - mandatory!
 		void setTheme(Theme *theme_, u16 bgcolor_);

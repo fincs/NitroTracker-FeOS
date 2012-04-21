@@ -36,6 +36,7 @@ enum Handedness {LEFT_HANDED, RIGHT_HANDED};
 class Settings {
 	public:
 		Settings(bool use_fat=true);
+		~Settings();
 		void read(void);
 
 		Handedness getHandedness(void);

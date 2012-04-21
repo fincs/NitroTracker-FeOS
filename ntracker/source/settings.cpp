@@ -52,14 +52,15 @@ fat(use_fat)
 	if(fat == true)
 	{
 		// Check if the config file exists and, if not, create it
-		if(!opendir("/data"))
+		DIR* d;
+		if(!(d = opendir("/data")))
 		{
 			mkdir("/data", 777);
-		}
-		if(!opendir("/data/NitroTracker"))
+		} else closedir(d);
+		if(!(d = opendir("/data/NitroTracker")))
 		{
 			mkdir("/data/NitroTracker", 777);
-		}
+		} else closedir(d);
 		FILE *conf = fopen("/data/NitroTracker/NitroTracker.conf", "r");
 		if(conf == NULL)
 		{
@@ -118,6 +119,11 @@ fat(use_fat)
 			free(confstr);
 		}
 	}
+}
+
+Settings::~Settings()
+{
+	delete theme;
 }
 
 Handedness Settings::getHandedness(void)
