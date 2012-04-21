@@ -16,6 +16,7 @@ How to build
 You need the following in order to build NitroTracker for FeOS:
 
 - Latest [FeOS and FeOS SDK](https://github.com/fincs/FeOS)
+- [μSTL for FeOS](http://feos.mtheall.com/uSTL-FeOS/)
 - A brain
 
 On the main repository directory, type the following command:
