@@ -191,7 +191,7 @@ u16 *main_vram_front, *main_vram_back, *sub_vram;
 bool typewriter_active = false;
 
 u16 keys_that_are_repeated = KEY_UP | KEY_DOWN | KEY_LEFT | KEY_RIGHT;
-u16 repeatkeys = 0, repeatkeys_last = 0;
+//u16 repeatkeys = 0, repeatkeys_last = 0;
 
 // Make the key botmasks variable for switching handedness
 u16 mykey_LEFT = KEY_LEFT, mykey_UP = KEY_UP, mykey_RIGHT = KEY_RIGHT, mykey_DOWN = KEY_DOWN,
@@ -1603,6 +1603,7 @@ void handleSamplePreviewToggled(bool on)
 	settings->setSamplePreview(on);
 }
 
+/*
 void keyRepeatTimerHandler(void)
 {
 	repeatkeys_last = repeatkeys;
@@ -1622,6 +1623,7 @@ void keyRepeatTimerHandler(void)
 		FeOS_TimerWrite(1, 0);
     }
 }
+*/
 
 
 void handleFileChange(File file)
@@ -3317,7 +3319,7 @@ void VblankHandler(void)
 {
 	// Check input
 	scanKeys();
-	u16 keysdown = keysDown();
+	u16 keysdown = keysDown() | (keysDownRepeat() & keys_that_are_repeated);
 	u16 keysup = keysUp();
 	u16 keysheld = keysHeld();
 	touchRead(&touch);
@@ -3370,6 +3372,7 @@ void VblankHandler(void)
 		//TIMER1_DATA = TIMER_FREQ(REPEAT_FREQ*256);
 		//TIMER1_CR = TIMER_ENABLE | TIMER_DIV_256 | TIMER_IRQ_REQ;
 
+		/*
 		#define BUS_CLOCK (33513982)
 		#define TIMER_FREQ(n) (-BUS_CLOCK/(n))
 		#define TIMER_ENABLE (1<<7)
@@ -3377,6 +3380,7 @@ void VblankHandler(void)
 		#define TIMER_IRQ_REQ (1<<6)
 
 		FeOS_TimerWrite(1, (TIMER_FREQ(REPEAT_FREQ*256) & 0xFFFF) | ((TIMER_ENABLE | TIMER_DIV_256 | TIMER_IRQ_REQ) << 16));
+		*/
 
 		/*
 		// TODO: Better standby mode.
@@ -3699,8 +3703,11 @@ int main(int argc, char* argv[]) {
 #ifndef DEBUG
 	fadeIn();
 #endif
+	/*
 	irqSet(IRQ_TIMER1, keyRepeatTimerHandler);
 	irqEnable(IRQ_TIMER1);
+	*/
+	keysSetRepeat(15, int(59.826 / double(REPEAT_FREQ) + 0.5));
 
 #ifdef USE_FAT
 	//if(!fat_success)
@@ -3729,9 +3736,11 @@ int main(int argc, char* argv[]) {
 		swiWaitForVBlank();
 	}
 
+	/*
 	FeOS_TimerStop(1);
 	irqSet(IRQ_TIMER1, NULL);
 	irqDisable(IRQ_TIMER1);
+	*/
 
 	FeOS_ConsoleMode();
 	CommandDeinit();
