@@ -181,9 +181,7 @@ use BG_TILE_RAM_SUB unless you really can't */
 #define FILETYPE_SAMPLE	1
 #define FILETYPE_INST	2
 
-//touchPosition touch;
-typedef struct { int px, py; } styluspos2_t;
-styluspos2_t touch;
+touchPosition touch;
 u8 frame = 0;
 
 u8 active_buffer = FRONT_BUFFER;
@@ -3322,8 +3320,7 @@ void VblankHandler(void)
 	u16 keysdown = keysDown();
 	u16 keysup = keysUp();
 	u16 keysheld = keysHeld();
-	//touchRead(&touch);
-	FeOS_GetStylusPos((styluspos_t*) &touch);
+	touchRead(&touch);
 
 	if(keysdown & KEY_TOUCH)
 	{
