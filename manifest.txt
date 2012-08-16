@@ -1,0 +1,7 @@
+Title: NitroTracker for FeOS
+Author: Tobias Weyand <fincs@mtheall.com>
+Copyright: 2010-2012 Tobias Weyand
+Description: A FastTracker2-style tracker for the Nintendo DS - FeOS port by fincs
+Depends: ustl
+Version: 0.5
+License: GPLv3

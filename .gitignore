@@ -2,5 +2,6 @@ build/
 *.elf
 *.dbg
 *.fx2
+*.fpkg
 *.a
 *~
