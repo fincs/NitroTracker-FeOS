@@ -38,7 +38,7 @@
 NormalizeBox::NormalizeBox(u16 **_vram, void (*_onOk)(void), void (*_onCancel)(void))
 	:Widget((SCREEN_WIDTH-NORMALIZEBOX_WIDTH)/2, (SCREEN_HEIGHT-NORMALIZEBOX_HEIGHT)/2,
 		NORMALIZEBOX_WIDTH, NORMALIZEBOX_HEIGHT, _vram),
-	onOk(_onOk), onCancel(_onCancel)
+	onOk(_onOk), onCancel(_onCancel), gui()
 {
 	title = "adjust amplitude";
 	
@@ -63,8 +63,6 @@ NormalizeBox::NormalizeBox(u16 **_vram, void (*_onOk)(void), void (*_onCancel)(v
 
 NormalizeBox::~NormalizeBox(void)
 {
-	delete buttonok;
-	delete buttoncancel;
 }
 
 // Drawing request

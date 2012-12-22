@@ -89,8 +89,7 @@ void my_end_malloc_invariant(void)
 
 void *my_memalign(size_t blocksize, size_t bytes)
 {
-	//void *buf = memalign(blocksize, bytes);
-	void* buf = malloc(bytes); // TODO
+	void *buf = memalign(blocksize, bytes);
 	if( ((u32)buf & blocksize) != 0) {
 #ifdef DEBUG
 		iprintf("Memalign error! %p ist not %u-aligned\n", buf, (u16)blocksize);

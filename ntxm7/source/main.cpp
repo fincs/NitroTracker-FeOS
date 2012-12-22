@@ -32,14 +32,17 @@ extern "C" int arm7_main(int fifoCh)
 
 extern "C" void arm7_fini()
 {
-	REG_SOUNDCNT &= ~SOUND_ENABLE;
-	writePowerManagement(PM_CONTROL_REG, ( readPowerManagement(PM_CONTROL_REG) & ~PM_SOUND_AMP ) | PM_SOUND_MUTE );
-	powerOff((PM_Bits)POWER_SOUND);
-
 	TIMER0_CR = 0;
 	TIMER1_CR = 0;
 	irqDisable(IRQ_TIMER0 | IRQ_TIMER1);
 	irqSet(IRQ_TIMER0, 0);
 	irqSet(IRQ_TIMER1, 0);
+
+	for (int i = 0; i < 16; i ++)
+		SCHANNEL_CR(i) = 0;
+
+	REG_SOUNDCNT &= ~SOUND_ENABLE;
+	writePowerManagement(PM_CONTROL_REG, ( readPowerManagement(PM_CONTROL_REG) & ~PM_SOUND_AMP ) | PM_SOUND_MUTE );
+	powerOff((PM_Bits)POWER_SOUND);
 	delete ntxm7;
 }

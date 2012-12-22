@@ -27,22 +27,18 @@ Typewriter::Typewriter(const char *_msg, u16 *_char_base,
 	vuint16* _trans_reg_y)
 	:Widget((SCREEN_WIDTH-TW_WIDTH)/2, (SCREEN_HEIGHT-TW_HEIGHT)/2-15, TW_WIDTH, TW_HEIGHT, _vram),
 	char_base(_char_base), map_base(_map_base),
-	kx(x+4), ky(y+16),
+	kx(x+4), ky(y+16), gui(),
 	mode(MODE_NORMAL),
 	trans_reg_x(_trans_reg_x), trans_reg_y(_trans_reg_y), cursorpos(0), strlength(0)
 {
-	//char_base = (u16*)CHAR_BASE_BLOCK_SUB(1);
-	//map_base = (u16*)SCREEN_BASE_BLOCK_SUB(12);
 	palette_offset = 3; // I have no clue why, but reading the _palette_offset parameter causes an immediate crash.
-	//palette_offset = _palette_offset;
-	
+
 	onOk = 0;
 	onCancel = 0;
 
 	dmaCopy((uint16*)typewriter_Palette, (uint16*)BG_PALETTE_SUB+palette_offset*16, 32);
 	dmaCopy((uint16*)typewriter_Palette_Hilight, (uint16 *)BG_PALETTE_SUB+palette_offset*16+16, 32);
-	
-	//dmaCopy((uint16*)keyboard_highlight_Palette, (uint16*)BG_PALETTE_SUB+16, 32);
+
 	dmaCopy((uint16*)typewriter_Tiles, char_base, 7776);
 
 	u8 msglength = getStringWidth(_msg);
@@ -71,10 +67,6 @@ Typewriter::Typewriter(const char *_msg, u16 *_char_base,
 
 Typewriter::~Typewriter(void)
 {
-	delete label;
-	delete msglabel;
-	delete buttonok;
-	delete buttoncancel;
 	free(text);
 	
 	for(u8 py=0; py<12; ++py) {

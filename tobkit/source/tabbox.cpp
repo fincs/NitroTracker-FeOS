@@ -9,11 +9,18 @@ TabBox::TabBox(u8 _x, u8 _y, u8 _width, u8 _height, u16 **_vram, bool _visible)
 	onTabChange = 0;
 }
 
+TabBox::~TabBox()
+{
+	for(u8 tab_id=0; tab_id<guis.size(); ++tab_id) {
+		delete guis.at(tab_id);
+	}
+}
+
 void TabBox::addTab(const u8 *icon)
 {
 	icons.push_back(icon);
-	GUI gui;
-	gui.setTheme(theme, theme->col_light_bg);
+	GUI* gui = new GUI();
+	gui->setTheme(theme, theme->col_light_bg);
 	guis.push_back(gui);
 }
 
@@ -21,7 +28,7 @@ void TabBox::addTab(const u8 *icon)
 // Touches on widget's area are redirected to the widget
 void TabBox::registerWidget(Widget *w, u16 listeningButtons, u8 tabidx, u8 screen)
 {
-	guis.at(tabidx).registerWidget(w, listeningButtons, screen);
+	guis.at(tabidx)->registerWidget(w, listeningButtons, screen);
 	
 	if(tabidx!=currenttab) {
 		w->occlude();
@@ -48,23 +55,23 @@ void TabBox::penDown(u8 px, u8 py)
 		}
 	} else {
 		// If its in the box
-		guis.at(currenttab).penDown(px,py);
+		guis.at(currenttab)->penDown(px,py);
 	}
 }
 
 void TabBox::penUp(u8 px, u8 py) {
-	guis.at(currenttab).penUp(px,py);
+	guis.at(currenttab)->penUp(px,py);
 }
 
 void TabBox::penMove(u8 px, u8 py) {
 	// If it's on the tabs
 	
 	// If its in the box
-	guis.at(currenttab).penMove(px,py);	
+	guis.at(currenttab)->penMove(px,py);
 }
 
 void TabBox::buttonPress(u16 buttons) {
-	guis.at(currenttab).buttonPress(buttons);
+	guis.at(currenttab)->buttonPress(buttons);
 }
 
 // Callback registration
@@ -82,25 +89,25 @@ void TabBox::pleaseDraw(void)
 void TabBox::show(void)
 {
 	Widget::show();
-	guis.at(currenttab).showAll();
+	guis.at(currenttab)->showAll();
 }
 
 void TabBox::hide(void)
 {
 	Widget::hide();
-	guis.at(currenttab).hideAll();
+	guis.at(currenttab)->hideAll();
 }
 
 void TabBox::occlude(void)
 {
 	Widget::occlude();
-	guis.at(currenttab).occludeAll();
+	guis.at(currenttab)->occludeAll();
 }
 
 void TabBox::reveal(void)
 {
 	Widget::reveal();
-	guis.at(currenttab).revealAll();
+	guis.at(currenttab)->revealAll();
 }
 
 
@@ -111,7 +118,7 @@ void TabBox::setTheme(Theme *theme_, u16 bgcolor_)
 	
 	for(u8 tab_id=0; tab_id<guis.size(); ++tab_id)
 	{
-		guis.at(tab_id).setTheme(theme_, theme->col_light_bg);
+		guis.at(tab_id)->setTheme(theme_, theme->col_light_bg);
 	}
 }
 
@@ -145,15 +152,15 @@ void TabBox::draw(void)
 	}
 	
 	// Draw gui
-	guis.at(currenttab).draw();
+	guis.at(currenttab)->draw();
 }
 
 void TabBox::updateVisibilities(void)
 {
 	for(u8 tab_id=0; tab_id<guis.size(); ++tab_id) {
 		if(tab_id != currenttab) {
-			guis.at(tab_id).occludeAll();
+			guis.at(tab_id)->occludeAll();
 		}
 	}
-	guis.at(currenttab).revealAll();
+	guis.at(currenttab)->revealAll();
 }

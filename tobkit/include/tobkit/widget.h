@@ -15,7 +15,7 @@ class Widget {
 	public:
 		// Constructor sets base variables
 		Widget(u8 _x, u8 _y, u8 _width, u8 _height, u16 **_vram, bool _visible=true, bool _occluded=true);
-		virtual ~Widget(void) {}
+		virtual ~Widget(void) { }
 
 		// Callback registration
 		// ... is done in the class

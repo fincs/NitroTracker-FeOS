@@ -56,6 +56,7 @@ void Button::buttonPress(u16 button) {
 }
 
 void Button::setCaption(const char *_caption) {
+	if (caption) free(caption);
 	caption = (char*)malloc(strlen(_caption)+1);
 	strcpy(caption, _caption);
 }

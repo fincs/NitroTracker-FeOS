@@ -30,6 +30,11 @@ State::State(void) {
 	reset();
 }
 
+State::~State() {
+	free(song_filename);
+	free(sample_filename);
+}
+
 void State::reset(void)
 {
 	dsmi_connected = false;

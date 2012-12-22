@@ -29,6 +29,7 @@ SOURCES       := source ../ntxm_common
 DATA          := data
 INCLUDES      := include ../ntxm_inc
 
+CONF_USERLIBS = sndlock
 CONF_DEFINES =
 
 include $(FEOSMK)/staticlib.mk

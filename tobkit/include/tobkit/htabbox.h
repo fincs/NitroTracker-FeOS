@@ -12,6 +12,7 @@
 class HTabBox: public Widget {
 	public:
 		HTabBox(u8 _x, u8 _y, u8 _width, u8 _height, u16 **_vram, bool _visible=true);
+		~HTabBox();
 		
 		void addTab(const u8 *icon);
 		
@@ -44,7 +45,7 @@ class HTabBox: public Widget {
 		
 		u8 currenttab;
 		std::vector<const u8*> icons;
-		std::vector<GUI> guis;
+		std::vector<GUI*> guis;
 		
 		void (*onTabChange)(u8 tab);
 };

@@ -29,9 +29,9 @@ SOURCES       := source source/tobkit
 DATA          := data
 INCLUDES      := include ../ntxm_inc
 
-CONF_USERLIBS = ustl
+CONF_USERLIBS = ustl sndlock
 CONF_LIBDIRS = $(CURDIR)/../ntxm9 $(CURDIR)/../tobkit
-CONF_LIBS = -lntxm9 -ltobkit -lustl
+CONF_LIBS = -lntxm9 -ltobkit -lustl -lsndlock
 CONF_DEFINES =
 
 include $(FEOSMK)/app.mk

@@ -231,6 +231,7 @@ u16 XMTransport::load(const char *filename, Song **_song)
 		if(n_rows > MAX_PATTERN_LENGTH)
 		{
 			fclose(xmfile);
+			delete song;
 			return XM_TRANSPORT_PATTERN_TOO_LONG;
 		}
 
@@ -255,6 +256,7 @@ u16 XMTransport::load(const char *filename, Song **_song)
 #ifdef DEBUG
 				iprintf("pattern read error.\nread:%u (should be %u)\n", bytes_read, patterndata_size);
 #endif
+				delete song;
 				return XM_TRANSPORT_ERROR_PATTERN_READ;
 			}
 
@@ -450,6 +452,7 @@ u16 XMTransport::load(const char *filename, Song **_song)
 #ifdef DEBUG
 			iprintf("memfull on line %d\n", __LINE__);
 #endif
+			delete song;
 			return XM_TRANSPORT_ERROR_MEMFULL;
 		}
 		song->setInstrument(inst, instrument);
@@ -602,6 +605,7 @@ u16 XMTransport::load(const char *filename, Song **_song)
 #ifdef DEBUG
 						iprintf("memfull on line %d\n", __LINE__);
 #endif
+						delete song;
 						return XM_TRANSPORT_ERROR_MEMFULL;
 					}
 

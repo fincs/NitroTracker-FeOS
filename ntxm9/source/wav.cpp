@@ -106,6 +106,7 @@ bool Wav::load(const char *filename)
 
 	if(strcmp(buf,"RIFF")!=0) {
 		fclose(fileh);
+		free(buf);
 		return false;
 	}
 
@@ -116,6 +117,7 @@ bool Wav::load(const char *filename)
 	fread(buf, 1, 4, fileh);
 	if(strcmp(buf,"WAVE")!=0) {
 		fclose(fileh);
+		free(buf);
 		return false;
 	}
 
@@ -123,6 +125,7 @@ bool Wav::load(const char *filename)
 	fread(buf, 1, 4, fileh);
 	if(strcmp(buf,"fmt ")!=0) {
 		fclose(fileh);
+		free(buf);
 		return false;
 	}
 
@@ -139,6 +142,7 @@ bool Wav::load(const char *filename)
 		compression_ = CMP_ADPCM;
 	}*/ else {
 		fclose(fileh);
+		free(buf);
 		return false;
 	}
 
@@ -147,6 +151,7 @@ bool Wav::load(const char *filename)
 
 	if(n_channels > 2) {
 		fclose(fileh);
+		free(buf);
 		return false;
 	} else {
 		n_channels_ = n_channels;
@@ -169,6 +174,7 @@ bool Wav::load(const char *filename)
 		bit_per_sample_ = bit_per_sample;
 	} else {
         fclose(fileh);
+		free(buf);
         return false;
     }
 
@@ -187,6 +193,7 @@ bool Wav::load(const char *filename)
 
 	if(feof(fileh)) {
 		fclose(fileh);
+		free(buf);
 		return false;
 	}
 

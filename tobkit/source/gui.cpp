@@ -1,24 +1,45 @@
 #include "tobkit/gui.h"
 
 #include <stdio.h>
+#ifdef DEBUG
+#include "backtrace.h"
+#endif
 
 /* ===================== PUBLIC ===================== */
+
+#ifdef DEBUG
+static int stackdumpCallback(void* address, int depth /* 0-based */, void* user_data)
+{
+	if (depth == 0) return 1; // skip call to parent
+	instance_t hInst = FeOS_ModuleFromAddress(address);
+	if (!hInst || !~(word_t)hInst)
+		printf("  -> 0x%08X\n", (word_t) address);
+	else
+		printf("  -> %s+0x%X\n", FeOS_GetModuleName(hInst), (char*)address - (char*)hInst);
+	return 1;
+}
+#endif
 
 GUI::GUI()
 	:activeWidget(0), activeScreen(SUB_SCREEN), overlayWidgetMain(0),
 	overlayWidgetSub(0), overlayShortcuts(0)
 {
+#ifdef DEBUG
+	printf("%p: GUI::GUI()\n", this);
+	FeOS_Backtrace(stackdumpCallback, NULL);
+#endif
 	u8 i;
 	for(i=0;i<14;++i) {
 		shortcuts.push_back(0);
 	}
 }
 
-bool bAllowWidgetDelete = false;
-
 GUI::~GUI()
 {
-	if (!bAllowWidgetDelete) return;
+#ifdef DEBUG
+	printf("%p: GUI::~GUI() %s\n", this, bAllowWidgetDelete ? "true" : "false");
+	FeOS_Backtrace(stackdumpCallback, NULL);
+#endif
 
 	for(std::vector<Widget*>::iterator w_it=widgets_sub.begin();w_it!=widgets_sub.end();++w_it)
 		delete (*w_it);

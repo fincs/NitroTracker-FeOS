@@ -14,7 +14,7 @@
 // Takes a list of alternating button captions and callbacks
 MessageBox::MessageBox(u16 **_vram, const char *message, u8 n_buttons, ...)
 	:Widget((SCREEN_WIDTH-MB_MIN_WIDTH)/2, (SCREEN_HEIGHT-MB_HEIGHT)/2, MB_MIN_WIDTH, MB_HEIGHT, _vram),
-	n_buttons(n_buttons)
+	gui(), n_buttons(n_buttons)
 {
 	msg = (char*)calloc(1, strlen(message)+1);
 	strcpy(msg, message);
@@ -94,9 +94,7 @@ MessageBox::~MessageBox(void)
 
 	//delete label;
 	free(callbacks);
-	for(u8 i=0; i<n_buttons; ++i) {
-		delete buttons[i];
-	}
+
 	if(n_buttons > 0) {
 		free(buttons);
 	}

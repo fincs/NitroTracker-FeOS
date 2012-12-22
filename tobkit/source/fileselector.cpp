@@ -163,26 +163,16 @@ struct _compare_filenames
 {
 	inline bool operator()(File f1, File f2)
 	{
-		char *fn1, *fn2;
-		fn1 = (char*)malloc(256);
-		fn2 = (char*)malloc(256);
-
-		strcpy(fn1, stringtolowercase(f1.name).c_str());
-		strcpy(fn2, stringtolowercase(f2.name).c_str());
-
 		bool res;
 		if((f1.is_dir)&&(!f2.is_dir)) {
 			res = true;
 		} else if ((!f1.is_dir)&&(f2.is_dir)) {
 			res = false;
-		} else if(strcmp(fn1,fn2)<0) {
+		} else if(stricmp(f1.name.c_str(),f2.name.c_str())<0) {
 			res = true;
 		} else {
 			res = false;
 		}
-
-		free(fn1);
-		free(fn2);
 
 		return res;
 	}

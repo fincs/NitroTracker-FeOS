@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-//#include <sys/dir.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -292,8 +291,6 @@ bool Settings::getConfigValue(char *config, const char *attribute, char *value, 
 	size_t len = min(maxlen-1, vallen);
 	strncpy(value, valstart, len);
 	value[len] = 0;
-
-	//iprintf("'%s' : '%s'\n", attribute, value);
 
 	return true;
 }

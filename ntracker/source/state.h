@@ -34,6 +34,7 @@
 class State {
 	public:
 		State(void);
+		~State();
 		void reset(void);
 		void resetSong(void); // resets only song-specific settings
 

@@ -27,9 +27,6 @@
 
 #include <stdio.h>
 #include <string.h>
-//#include <malloc.h>
-//#include <nds.h>
-//#include <sys/statvfs.h>
 
 #ifdef ARM9
 
@@ -43,27 +40,4 @@ void lowercase(char *str)
 	}
 }
 
-void dbgWaitButton(void)
-{
-#ifdef DEBUG
-	iprintf("press the any key...\n");
 #endif
-	//scanKeys();
-	while(! (keysDown()&KEY_A) ) swiWaitForVBlank(); //scanKeys();
-}
-
-#endif
-
-void PrintFreeMem(void)
-{
-	//iprintf("FreeMem=%dbyte    \n", my_get_free_mem());
-}
-
-void printMallInfo(void)
-{
-	/*struct mallinfo mi = mallinfo();
-	iprintf("non-inuse chunks: %d\n", mi.fordblks);
-	iprintf("sbrk bytes:       %d\n", mi.arena);
-	iprintf("mmap bytes:       %d\n", mi.hblkhd);
-	iprintf("malloc chunks:    %d\n", mi.uordblks);*/
-}

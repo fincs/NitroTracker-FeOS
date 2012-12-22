@@ -23,21 +23,16 @@
  */
 
 //#define DEBUG
-//#define GURU // Show guru meditations
-//#define SPLASH
 //#define WIFIDEBUG
 //#define WIFI
-//#define USE_FAT
 
 #include <nds.h>
-//#include <nds/arm9/console.h>
-//#include <nds/arm9/sound.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-//#include <malloc.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -63,7 +58,6 @@
 #include "state.h"
 #include "settings.h"
 #include "tools.h"
-//#include "splash.h"
 
 #include "icon_disk_bin.h"
 #include "icon_song_bin.h"
@@ -72,15 +66,11 @@
 #include "icon_trumpet_bin.h"
 
 #include "icon_flp_bin.h"
-//#include "icon_copy_bin.h"
-//#include "icon_cut_bin.h"
-//#include "icon_paste_bin.h"
 #include "icon_pause_bin.h"
 #include "icon_play_bin.h"
 #include "icon_stop_bin.h"
 
 #include "sampleedit_control_icon_bin.h"
-//#include "sampleedit_chip_icon_bin.h"
 #include "sampleedit_wave_icon_bin.h"
 #include "sampleedit_loop_icon_bin.h"
 #include "sampleedit_fadein_bin.h"
@@ -93,13 +83,6 @@
 #include "sampleedit_normalize_bin.h"
 #include "sampleedit_draw_bin.h"
 #include "sampleedit_draw_small_bin.h"
-
-//#include <fat.h>
-//#include <libdsmi.h>
-//#ifdef WIFIDEBUG
-//#include <user_debugger.h>
-//#endif
-//#include <dswifi9.h>
 
 // libnds copypasta BEGIN!
 
@@ -165,13 +148,6 @@ use BG_TILE_RAM_SUB unless you really can't */
 
 // ---
 
-//#define PEN_DOWN (~IPC->buttons & (1 << 6))
-
-#define EXTERNAL_DATA(name) \
-  extern const uint8  name[]; \
-  extern const uint8 name##_end[]; \
-  extern const uint32 name##_size
-
 #define REPEAT_FREQ	10
 
 #define FRONT_BUFFER	0
@@ -189,9 +165,9 @@ u8 active_buffer = FRONT_BUFFER;
 u16 *main_vram_front, *main_vram_back, *sub_vram;
 
 bool typewriter_active = false;
+volatile bool need_to_redraw = false;
 
 u16 keys_that_are_repeated = KEY_UP | KEY_DOWN | KEY_LEFT | KEY_RIGHT;
-//u16 repeatkeys = 0, repeatkeys_last = 0;
 
 // Make the key botmasks variable for switching handedness
 u16 mykey_LEFT = KEY_LEFT, mykey_UP = KEY_UP, mykey_RIGHT = KEY_RIGHT, mykey_DOWN = KEY_DOWN,
@@ -224,7 +200,7 @@ GUI *gui;
 // </Disk op gui>
 
 // <Song Gui>
-	Label *labelsonglen, *labeltempo, *labelbpm, *labelptns, *labelptnlen,
+	Label *labeltempo, *labelbpm, *labelptns, *labelptnlen,
 		*labelchannels, *labelsongname, *labelrestartpos, *labelramusage;
 	ListBox *lbpot;
 	Button *buttonpotup, *buttonpotdown, *buttoncloneptn,
@@ -323,8 +299,6 @@ void clearMainScreen(void)
 {
 	u16 col = settings->getTheme()->col_dark_bg;
 	u32 colcol = col | col << 16;
-	/*swiFastCopy(&colcol, main_vram_front, 192*256/2 | COPY_MODE_FILL);
-	swiFastCopy(&colcol, main_vram_back, 192*256/2 | COPY_MODE_FILL);*/
 	dmaFillHalfWords(colcol, main_vram_front, 192*256*2);
 	dmaFillHalfWords(colcol, main_vram_back, 192*256*2);
 }
@@ -334,7 +308,6 @@ void clearSubScreen(void)
 	u16 col = settings->getTheme()->col_dark_bg;
 	u32 colcol = col | col << 16;
 	// Fill the bg with the bg color except for the place where the keyboard is
-	//swiFastCopy(&colcol, sub_vram, 153*256/2 | COPY_MODE_FILL);
 	dmaFillHalfWords(colcol, sub_vram, 153*256*2);
 	for(int y=154;y<192;++y)
 	{
@@ -503,19 +476,6 @@ void sampleChange(Sample *smp)
 		rbg_sampleloop->setActive(smp->getLoop());
 	else
 		rbg_sampleloop->setActive(0);
-	/*
-	iprintf("Selected:");
-	if(smp->is16bit()) {
-		iprintf("16bit ");
-	} else {
-		iprintf("8bit ");
-	}
-	if(smp->getLoop() != 0) {
-		iprintf("looping ");
-	}
-	iprintf("Sample.\n");
-	iprintf("length: %u\n", smp->getNSamples());
-	*/
 }
 
 void volEnvSetInst(Instrument *inst)
@@ -568,14 +528,6 @@ void handleInstChange(u16 newinst)
 		sampleChange(NULL);
 		return;
 	}
-}
-
-void updateLabelSongLen(void)
-{
-	char *labelstr = (char*)malloc(12);
-	sprintf(labelstr, "songlen:%2d", song->getPotLength());
-	//labelsonglen->setCaption(labelstr);
-	free(labelstr);
 }
 
 void updateLabelChannels(void)
@@ -647,7 +599,6 @@ void setSong(Song *newsong)
 		cbvolenvenabled->setChecked(inst->getVolEnvEnabled());
 
 	updateLabelChannels();
-	updateLabelSongLen();
 	updateTempoAndBpm();
 	nsptnlen->setValue(song->getPatternLength(song->getPotEntry(state->potpos)));
 	nsrestartpos->setValue(song->getRestartPosition());
@@ -673,8 +624,6 @@ void setSong(Song *newsong)
 
 	//gui->draw();
 	drawMainScreen();
-	
-	PrintFreeMem();
 }
 
 bool loadSample(const char *filename_with_path)
@@ -745,7 +694,7 @@ void loadSong(const char* n)
 	mb->show();
 	mb->pleaseDraw();
 
-	Song *newsong;
+	Song *newsong = NULL;
 
 	u16 err;
 
@@ -758,7 +707,7 @@ void loadSong(const char* n)
 
 	if(err) {
 		// Emergency: set up an empty song
-		delete newsong;
+		if (newsong) delete newsong;
 		newsong = new Song(10, 125);
 	}
 
@@ -766,10 +715,8 @@ void loadSong(const char* n)
 
 	DC_FlushAll();
 
-	if(err)
-	{
+	if(err) {
 		showMessage(err != 0xFFFF ? xm_transport.getError(err) : "file doesn't exist!");
-		PrintFreeMem();
 	}
 }
 
@@ -1014,6 +961,7 @@ void handleTypewriterFilenameOk(void)
 		}
 	}
 	deleteTypewriter();
+	free(name);
 }
 
 
@@ -1056,13 +1004,6 @@ void insNote(void)
 
 	Cell *firstcell = &ptn[state->channel][state->row];
 	song->clearCell(firstcell);
-	/*
-	firstcell->note = EMPTY_NOTE;
-	firstcell->volume = NO_VOLUME;
-	firstcell->instrument = NO_INSTRUMENT;
-	firstcell->effect = NO_EFFECT;
-	firstcell->effect_param = ;
-	*/
 	DC_FlushAll();
 
 	drawMainScreen();
@@ -1093,12 +1034,10 @@ void drawMainScreen(void)
 
 	if(active_buffer == FRONT_BUFFER) {
 	    bgSetMapBase(2, 2);
-		//BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(2);
 		main_vram_front = (uint16*)BG_BMP_RAM(2);
 		main_vram_back = (uint16*)BG_BMP_RAM(8);
 	} else {
 	    bgSetMapBase(2, 8);
-		//BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(8);
 		main_vram_front = (uint16*)BG_BMP_RAM(8);
 		main_vram_back = (uint16*)BG_BMP_RAM(2);
 	}
@@ -1120,7 +1059,6 @@ void redrawSubScreen(void)
 // Called on every tick when the song is playing
 void HandleTick(void)
 {
-	//drawMainScreen();
 }
 
 
@@ -1151,7 +1089,7 @@ void stop(void)
 	// if state->playing == true. So, by setting it to false here we might miss ticks
 	// resultsing in the pattern view being out of sync with the song. So we wait two
 	// frames to make sure the arm7 has really stopped and redraw the pattern.
-	swiWaitForVBlank(); swiWaitForVBlank();
+	//swiWaitForVBlank(); swiWaitForVBlank();
 	drawMainScreen();
 
 #ifdef WIFI
@@ -1200,7 +1138,6 @@ void setRecordMode(bool is_on)
 {
 	state->recording = is_on;
 	drawMainScreen(); // <- must redraw because of orange lines
-
 
 	// Draw border
 	u16 col;
@@ -1356,7 +1293,6 @@ void handlePotIns(void)
 	song->potIns(state->potpos, song->getPotEntry(state->potpos));
 	DC_FlushAll();
 	lbpot->ins(lbpot->getidx(), lbpot->get(lbpot->getidx()));
-	updateLabelSongLen();
 }
 
 
@@ -1372,8 +1308,6 @@ void handlePotDel(void)
 	if(state->potpos>=song->getPotLength()) {
 		state->potpos = song->getPotLength() - 1;
 	}
-
-	updateLabelSongLen();
 
 	if(song->getRestartPosition() >= song->getPotLength()) {
 		song->setRestartPosition( song->getPotLength() - 1 );
@@ -1405,8 +1339,6 @@ void handlePtnClone(void)
 	char numberstr[3] = {0};
 	sprintf(numberstr, "%2x", newidx);
 	lbpot->ins(lbpot->getidx()+1, numberstr);
-
-	updateLabelSongLen();
 }
 
 void handleChannelAdd(void)
@@ -1490,7 +1422,6 @@ void zapPatterns(void)
 	lbpot->clear();
 	lbpot->add(" 0");
 
-	updateLabelSongLen();
 	updateLabelChannels();
 	updateGuiToNewPattern(0);
 
@@ -1550,6 +1481,7 @@ void handleZap(void)
 void handleNewRow(u16 row)
 {
 	state->row = row;
+	need_to_redraw = true; // Trigger a redraw
 
 	if(!state->playing)
 		return;
@@ -1570,7 +1502,6 @@ void handleNewRow(u16 row)
 
 			if(curr_cell->note == 254) // Note off
 			{
-				//iprintf("off c %u n %u\n", chn, curr_cell->note);
 				dsmi_write(NOTE_OFF | dsmw_lastchannels[chn], dsmw_lastnotes[chn], 0);
 				dsmw_lastnotes[chn] = curr_cell->note;
 			}
@@ -1578,10 +1509,8 @@ void handleNewRow(u16 row)
 			{
 				// Turn the last note off
 				if(dsmw_lastnotes[chn] < 254) {
-					//iprintf("off c %u n %u\n", chn, curr_cell->note);
 					dsmi_write(NOTE_OFF | dsmw_lastchannels[chn], dsmw_lastnotes[chn], 0);
 				}
-				//iprintf("on c %u n %u v %u\n", chn, curr_cell->note, curr_cell->volume / 2);
 				u8 midichannel = curr_cell->instrument % 16;
 				dsmi_write(NOTE_ON | midichannel, curr_cell->note, curr_cell->volume / 2);
 
@@ -1602,29 +1531,6 @@ void handleSamplePreviewToggled(bool on)
 {
 	settings->setSamplePreview(on);
 }
-
-/*
-void keyRepeatTimerHandler(void)
-{
-	repeatkeys_last = repeatkeys;
-	u16 keysheld = keysHeld();
-	repeatkeys = keysheld & keys_that_are_repeated;
-	u16 actual_repeatkeys = repeatkeys_last & repeatkeys;
-
-	if(actual_repeatkeys) {
-		gui->buttonPress(actual_repeatkeys);
-		handleButtons(actual_repeatkeys, keysheld);
-		drawMainScreen();
-	}
-
-	if(!repeatkeys) {
-		// Turn the timer off if no keys are held
-		//TIMER1_CR = 0;
-		FeOS_TimerWrite(1, 0);
-    }
-}
-*/
-
 
 void handleFileChange(File file)
 {
@@ -2678,7 +2584,6 @@ void setupGUI(void)
 
 		rbsample->setCaption("smp");
 
-		//rbinst   = new RadioButton(2, 51, 36, 14, &sub_vram, "ins", rbgdiskop);
 		rbgdiskop->setActive(0);
 
 		rbgdiskop->registerChangeCallback(handleDiskOPChangeFileType);
@@ -2715,7 +2620,6 @@ void setupGUI(void)
 		tabbox->registerWidget(fileselector, 0, 1);
 		tabbox->registerWidget(rbsong, 0, 1);
 		tabbox->registerWidget(rbsample, 0, 1);
-		//tabbox->registerWidget(rbinst, 0, 1);
 		tabbox->registerWidget(memoryiindicator_disk, 0, 1);
 		tabbox->registerWidget(labelramusage_disk, 0, 1);
 		tabbox->registerWidget(cbsamplepreview, 0, 1);
@@ -2830,8 +2734,6 @@ void setupGUI(void)
 	sampletabbox->addTab(sampleedit_control_icon_bin);
 	sampletabbox->addTab(sampleedit_loop_icon_bin);
 
-
-	//sampletabbox->addTab(sampleedit_chip_icon);
 	sampletabbox->registerTabChangeCallback(sampleTabBoxChage);
 
 	// <Sample editing>
@@ -3121,10 +3023,6 @@ void setupGUI(void)
 		buttonsetnotevol->setCaption("set");
 		buttonsetnotevol->registerPushCallback(handleSetNoteVol);
 
-		//buttoncut         = new BitButton(232,  52, 22, 21, &main_vram_back, icon_cut_bin, 16, 16, 3, 2);
-		//buttoncopy        = new BitButton(232,  74, 22, 21, &main_vram_back, icon_copy_bin, 16, 16, 3, 3);
-		//buttonpaste       = new BitButton(232,  96, 22, 21, &main_vram_back, icon_paste_bin, 16, 16, 3, 3);
-
 		buttoncut         = new Button(225,  86, 30, 12, &main_vram_back);
 		buttoncopy        = new Button(225,  99, 30, 12, &main_vram_back);
 		buttonpaste       = new Button(225, 112, 30, 12, &main_vram_back);
@@ -3201,9 +3099,7 @@ void setupGUI(void)
 
 	gui->revealAll();
 
-
 	updateTempoAndBpm();
-
 
 	gui->drawSubScreen(); // GUI
 	drawMainScreen(); // Pattern view. The function also flips buffers
@@ -3273,7 +3169,7 @@ void handleButtons(u16 buttons, u16 buttonsheld)
 		if(state->channel>0) {
 			state->channel--;
 			pv->updateSelection();
-			if(!state->playing) drawMainScreen();
+			need_to_redraw = true;
 		}
 	}
 	else if((buttons & mykey_RIGHT)&&(!typewriter_active))
@@ -3282,7 +3178,7 @@ void handleButtons(u16 buttons, u16 buttonsheld)
 		{
 			state->channel++;
 			pv->updateSelection();
-			if(!state->playing) drawMainScreen();
+			need_to_redraw = true;
 		}
 	}
 	else if(buttons & KEY_START)
@@ -3305,14 +3201,6 @@ void handleButtons(u16 buttons, u16 buttonsheld)
 		stopPlay();
 #endif
 	}
-#ifdef DEBUG
-	/*else if(buttons & mykey_Y) {
-		saveScreenshot();
-	} else if(buttons & mykey_R) {
-		dumpSample();
-	}
-	*/
-#endif
 }
 
 void VblankHandler(void)
@@ -3367,50 +3255,8 @@ void VblankHandler(void)
 		gui->buttonPress(keysdown);
 		handleButtons(keysdown, keysheld);
 		pv->pleaseDraw();
-
-		// Key repeat handling: enable repeat timer
-		//TIMER1_DATA = TIMER_FREQ(REPEAT_FREQ*256);
-		//TIMER1_CR = TIMER_ENABLE | TIMER_DIV_256 | TIMER_IRQ_REQ;
-
-		/*
-		#define BUS_CLOCK (33513982)
-		#define TIMER_FREQ(n) (-BUS_CLOCK/(n))
-		#define TIMER_ENABLE (1<<7)
-		#define TIMER_DIV_256 (2)
-		#define TIMER_IRQ_REQ (1<<6)
-
-		FeOS_TimerWrite(1, (TIMER_FREQ(REPEAT_FREQ*256) & 0xFFFF) | ((TIMER_ENABLE | TIMER_DIV_256 | TIMER_IRQ_REQ) << 16));
-		*/
-
-		/*
-		// TODO: Better standby mode.
-		if(keysdown & mykey_LID) {
-			while(keysHeld() & mykey_LID) {
-				POWER_CR = 0;
-			}
-			POWER_CR = POWER_ALL;
-		}*/
 	}
 
-	/*
-	 * reboot code commented out for now
-	if( (keysheld & KEY_START) && (keysheld & KEY_SELECT) && (mb == 0) )
-	{
-		fatInitDefault();
-#ifdef DEBUG
-		if(can_reboot())
-			reboot(); // >:-)
-#else
-		if(can_reboot())
-		{
-			mb = new MessageBox(&sub_vram, "really exit", 2, "yes", reboot, "no", deleteMessageBox);
-			gui->registerOverlayWidget(mb, 0, SUB_SCREEN);
-			mb->show();
-			mb->pleaseDraw();
-		}
-#endif
-	}
-	*/
 	if(keysup)
 	{
 		gui->buttonRelease(keysup);
@@ -3419,24 +3265,14 @@ void VblankHandler(void)
 			fastscroll = false;
 	}
 
-	// Constantly update pattern view while playing
-	if( ( state->playing == true ) && ( (state->recording == false) || ( (state->recording == true) && (frame == 0) ) ) )
+	// Update pattern view if necessary
+	if( need_to_redraw && ( (state->recording == false) || ( (state->recording == true) && (frame == 0) ) ) )
+	{
+		need_to_redraw = false;
 		drawMainScreen();
+	}
 
 	frame = (frame + 1) % 2;
-
-#ifdef DEBUG
-	/*
-	static s32 screenmove;
-	if((keysheld&mykey_L)&&(keysheld&mykey_R)) {
-		screenmove -= 10<<8;
-	} else {
-		screenmove = 0;
-	}
-	bgSetScroll(2, screenmove, 0);
-	bgUpdate();
-	*/
-#endif
 }
 
 extern "C" void debug_print_stub(char *string)
@@ -3529,9 +3365,6 @@ void applySettings(void)
 	bool samplepreview = settings->getSamplePreview();
 	cbsamplepreview->setChecked(samplepreview);
 
-	//fileselector->setSongPath(settings->getSongPath());
-	//fileselector->setSamplePath(settings->getSamplePath());
-
 	if(rbsong->getActive() == true)
 	{
 		fileselector->setDir(settings->getSongPath());
@@ -3560,10 +3393,6 @@ int main(int argc, char* argv[]) {
 	FeOS_DirectMode();
 	FeOS_SetAutoUpdate(AUTOUPD_KEYS, false);
 
-#ifdef GURU
-	defaultExceptionHandler();
-#endif
-
 	// Hide everything
 #ifndef DEBUG
 	setBrightness(3, 16);
@@ -3573,13 +3402,6 @@ int main(int argc, char* argv[]) {
 
 	// Adjust screens so that the main screen is the top screen
 	lcdMainOnTop();
-
-#ifdef SPLASH
-	splash_show();
-#else
-	//BRIGHTNESS = 1 << 14 | 16;
-	//SUB_BRIGHTNESS = 1 << 14 | 16;
-#endif
 
 	// Main screen: Text and double buffer ERB
 	videoSetMode(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
@@ -3591,56 +3413,26 @@ int main(int argc, char* argv[]) {
 	           VRAM_C_SUB_BG_0x06200000 , VRAM_D_LCD);
 
 	// SUB_BG0 for Piano Tiles
-	//videoBgEnableSub(0);
 	int piano_bg = bgInitSub(0, BgType_Text4bpp, BgSize_T_256x256, 1, 0);
 	bgSetScroll(piano_bg, 0, 0);
 	bgSetPriority(piano_bg, 2);
-	//SUB_BG0_CR = BG_COLOR_16 | BG_32x32 | BG_MAP_BASE(1) | BG_TILE_BASE(0) | BG_PRIORITY(2);
 
 	// SUB_BG1 for Typewriter Tiles
-	//videoBgEnableSub(1);
 	int typewriter_bg = bgInitSub(1, BgType_Text4bpp, BgSize_T_256x256, 12, 1);
 	bgSetPriority(typewriter_bg, 0);
-	//SUB_BG1_CR = BG_COLOR_16 | BG_32x32 | BG_MAP_BASE(12) | BG_TILE_BASE(1) | BG_PRIORITY(0);
-
-#ifdef DEBUG
-	u8 text_priority = 0;
-	u8 bg_priority = 1;
-#else
-	u8 text_priority = 1;
-	u8 bg_priority = 0;
-#endif
 
 	// Pattern view
 	int ptn_bg = bgInit(2, BgType_Bmp16, BgSize_B16_256x256, 2, 0);
-	bgSetPriority(ptn_bg, bg_priority);
-	//BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(2) | BG_PRIORITY(bg_priority);
-//	BG2_XDX = 1 << 8;
-//	BG2_XDY = 0;
-//	BG2_YDX = 0;
-//	BG2_YDY = 1 << 8;
+	bgSetPriority(ptn_bg, 0);
 
 	// Sub screen framebuffer
 	int sub_bg = bgInitSub(2, BgType_Bmp16, BgSize_B16_256x256, 2, 0);
 	bgSetPriority(sub_bg, 0);
-	//SUB_BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(2) | BG_PRIORITY(0);
-//	SUB_BG2_XDX = 1 << 8;
-//	SUB_BG2_XDY = 0;
-//	SUB_BG2_YDX = 0;
-//	SUB_BG2_YDY = 1 << 8;
 
 	// Special effects
 	REG_BLDCNT_SUB = BLEND_FADE_BLACK | BLEND_SRC_BG2 | BLEND_SRC_BG0;
 	REG_BLDCNT = BLEND_FADE_BLACK | BLEND_SRC_BG2 | BLEND_SRC_BG0;
 
-	// Setup text
-	//consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 4, 0, true, true);
-	bgSetPriority(0, text_priority);
-	//BG0_CR = BG_MAP_BASE(4) | BG_TILE_BASE(0) | BG_PRIORITY(text_priority);
-	//BG_PALETTE[255] = RGB15(0,29,4);
-	//consoleInitDefault((u16*)SCREEN_BASE_BLOCK(4), (u16*)CHAR_BASE_BLOCK(0), 16);
-
-	//bgUpdate();
 	swiWaitForVBlank();
 
 	// Set draw loactions for the ERBs
@@ -3655,13 +3447,9 @@ int main(int argc, char* argv[]) {
 
 	irqEnable(IRQ_VBLANK);
 
-#ifdef USE_FAT
-	//bool fat_success = fatInitDefault();
-#endif
-
 	state = new State();
 
-	settings = new Settings(true); //fat_success);
+	settings = new Settings(true);
 
 	clearMainScreen();
 	clearSubScreen();
@@ -3688,31 +3476,17 @@ int main(int argc, char* argv[]) {
 	RegisterPlaySampleFinishedCallback(handlePreviewSampleFinished);
 	RegisterPotPosChangeCallback(handlePotPosChangeFromSong);
 
-	//setupArm7Debug(); // Give arm7 a charbuf for debug msgs
-
 	setupSong();
 
 	CommandSetSong(song);
 
 	setupGUI();
 
-	gui->drawSubScreen();
-	gui->drawMainScreen();
-
 	applySettings();
 #ifndef DEBUG
 	fadeIn();
 #endif
-	/*
-	irqSet(IRQ_TIMER1, keyRepeatTimerHandler);
-	irqEnable(IRQ_TIMER1);
-	*/
 	keysSetRepeat(15, int(59.826 / double(REPEAT_FREQ) + 0.5));
-
-#ifdef USE_FAT
-	//if(!fat_success)
-	//	showMessage("dldi init failed");
-#endif
 
 #ifdef DEBUG
 	iprintf("NitroTracker debug build.\nBuilt %s %s\n<Start> clears messages.\n", __DATE__, __TIME__);
@@ -3736,12 +3510,6 @@ int main(int argc, char* argv[]) {
 		swiWaitForVBlank();
 	}
 
-	/*
-	FeOS_TimerStop(1);
-	irqSet(IRQ_TIMER1, NULL);
-	irqDisable(IRQ_TIMER1);
-	*/
-
 	FeOS_ConsoleMode();
 	CommandDeinit();
 	ntxmUninstallARM7();
@@ -3751,7 +3519,5 @@ int main(int argc, char* argv[]) {
 	delete song;
 	clipboard_free();
 
-	extern bool bAllowWidgetDelete;
-	bAllowWidgetDelete = true;
 	delete gui;
 }
