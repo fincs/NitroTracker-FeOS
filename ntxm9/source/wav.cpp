@@ -69,7 +69,7 @@ bool Wav::load(const char *filename)
 
 	fileh = fopen(filename, "r");
 
-	if((s32)fileh == -1)
+	if(!fileh)
 		return false;
 
 	// Check if the file is not too big

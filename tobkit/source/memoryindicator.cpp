@@ -9,7 +9,7 @@ MemoryIndicator::MemoryIndicator(u8 _x, u8 _y, u8 _width, u8 _height, u16 **_vra
 	:Widget(_x, _y, _width, _height, _vram, _visible)
 {
 	usagestats_t st;
-	FeOS_GetMemStats(&st);
+	KeGetMemStats(&st);
 	total_ram = st.total;
 	//total_ram = getFreeMem();
 }
@@ -31,7 +31,7 @@ void MemoryIndicator::draw(void)
 	/*struct mallinfo mi = mallinfo();
 	u32 used_ram = mi.uordblks; */
 	usagestats_t st;
-	FeOS_GetMemStats(&st);
+	KeGetMemStats(&st);
 	u32 used_ram = st.used;
 	
 	int boxwidth = (width - 2) * used_ram / total_ram;
@@ -99,6 +99,6 @@ u32 MemoryIndicator::getFreeMem(void)
 	return FreeMemSize;
 	*/
 	usagestats_t st;
-	FeOS_GetMemStats(&st);
+	KeGetMemStats(&st);
 	return st.free;
 }

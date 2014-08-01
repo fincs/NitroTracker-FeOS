@@ -195,7 +195,7 @@ u32 my_get_free_mem(void)
 u32 my_get_free_mem(void)
 {
 	usagestats_t st;
-	FeOS_GetMemStats(&st);
+	KeGetMemStats(&st);
 	return st.free;
 }
 
@@ -205,7 +205,7 @@ u32 my_getUsedRam(void)
 	//return info.usmblks + info.uordblks;
 
 	usagestats_t st;
-	FeOS_GetMemStats(&st);
+	KeGetMemStats(&st);
 	return st.used;
 }
 
@@ -219,9 +219,9 @@ u32 my_getFreeDiskSpace(void)
 	} else {
 		return fiData.f_bsize*fiData.f_bfree;
 	}*/
-	usagestats_t st;
-	if (!FeOS_GetDiskStats(&st)) return 0;
-	return st.free;
+	usagestats64_t st;
+	if (!KeGetDiskStats(&st)) return 0;
+	return (u32)st.free;
 }
 
 u32 my_getFileSize(const char *filename)

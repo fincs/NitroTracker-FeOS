@@ -188,7 +188,7 @@ int CommandStopRecording(void)
 
     while(!fifoCheckValue32(FIFO_NTXM))
         //swiDelay(1);
-		FeOS_WaitForIRQ(~0);
+		DSWaitForIRQ(~0);
 
     int x = (int)fifoGetValue32(FIFO_NTXM);
 	fifoSetValue32Handler(FIFO_NTXM, CommandRecvHandler, 0);

@@ -42,8 +42,8 @@ sample_preview(true),
 theme(new Theme()),
 fat(use_fat)
 {
-	memset(songpath, 0, 255);
-	memset(samplepath, 0, 255);
+	//memset(songpath, 0, 255);
+	//memset(samplepath, 0, 255);
 
 	strcpy(songpath,"/");
 	strcpy(samplepath,"/");
@@ -285,7 +285,7 @@ bool Settings::getConfigValue(char *config, const char *attribute, char *value, 
 		valend--;
 
 	// Clear the destination string just to be safe
-	memset(value, 0, maxlen);
+	//memset(value, 0, maxlen);
 
 	size_t vallen = valend - valstart + 1;
 	size_t len = min(maxlen-1, vallen);

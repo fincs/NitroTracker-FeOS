@@ -59,8 +59,8 @@ void reStartRealTicks(void)
 	TIMER2_CR=TIMER_DIV_1024 | TIMER_ENABLE;
 	TIMER3_CR=TIMER_CASCADE | TIMER_ENABLE;
 #else
-	FeOS_TimerWrite(2, (TIMER_DIV_1024 | TIMER_ENABLE) << 16);
-	FeOS_TimerWrite(3, (TIMER_CASCADE | TIMER_ENABLE) << 16);
+	DSTimerWrite(2, (TIMER_DIV_1024 | TIMER_ENABLE) << 16);
+	DSTimerWrite(3, (TIMER_CASCADE | TIMER_ENABLE) << 16);
 #endif
 }
 
@@ -69,7 +69,7 @@ unsigned int getRealTicks(void)
 #ifdef ARM7
 	return timers2ms(TIMER2_DATA, TIMER3_DATA);
 #else
-	return timers2ms(FeOS_TimerTick(2), FeOS_TimerTick(3));
+	return timers2ms(DSTimerTick(2), DSTimerTick(3));
 #endif
 }
 

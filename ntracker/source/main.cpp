@@ -616,7 +616,7 @@ void setSong(Song *newsong)
 
 	lbsamples->select(0);
 
-	memset(str, 0, 255);
+	//memset(str, 0, 255);
 	strcpy(str, song->getName());
 	labelsongname->setCaption(str);
 
@@ -770,7 +770,7 @@ void saveFile(void)
 	std::string dir = fileselector->getDir();
 	const char *path = dir.c_str();
 	char *pathfilename = (char*)malloc( strlen(path)+strlen(filename)+1 );
-	memset(pathfilename, 0, strlen(path)+strlen(filename)+1);
+	//memset(pathfilename, 0, strlen(path)+strlen(filename)+1);
 	strcpy(pathfilename, path);
 	strcpy(pathfilename+strlen(path), filename);
 
@@ -847,7 +847,7 @@ void handleSave(void)
 	const char *path = dir.c_str();
 
 	char *pathfilename = (char*)malloc(strlen(path)+strlen(filename)+1);
-	memset(pathfilename, 0, strlen(path)+strlen(filename)+1);
+	//memset(pathfilename, 0, strlen(path)+strlen(filename)+1);
 	strcpy(pathfilename, path);
 	strcpy(pathfilename+strlen(path), filename);
 
@@ -3375,9 +3375,16 @@ void applySettings(void)
 	}
 }
 
-//---------------------------------------------------------------------------------
-int main(int argc, char* argv[]) {
-//---------------------------------------------------------------------------------
+typedef struct
+{
+	int argc;
+	char** argv;
+} dirModeParams;
+
+static int dirModeMain(void* __arg);
+
+int main(int argc, char* argv[])
+{
 	if (argc > 2)
 	{
 		printf("usage: %s [xmFile]\n", argv[0]);
@@ -3390,8 +3397,29 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	FeOS_DirectMode();
-	FeOS_SetAutoUpdate(AUTOUPD_KEYS, false);
+	dirModeParams p = { argc, argv };
+
+	if (DSRequestHardware(dirModeMain, &p, NULL) < 0)
+		return 1;
+
+	CommandDeinit();
+	ntxmUninstallARM7();
+
+	delete state;
+	delete settings;
+	delete song;
+	clipboard_free();
+
+	delete gui;
+	return 0;
+}
+
+//---------------------------------------------------------------------------------
+int dirModeMain(void* __arg) {
+//---------------------------------------------------------------------------------
+	auto& _arg = *(dirModeParams*)__arg;
+	int argc = _arg.argc;
+	char** argv = _arg.argv;
 
 	// Hide everything
 #ifndef DEBUG
@@ -3510,14 +3538,5 @@ int main(int argc, char* argv[]) {
 		swiWaitForVBlank();
 	}
 
-	FeOS_ConsoleMode();
-	CommandDeinit();
-	ntxmUninstallARM7();
-
-	delete state;
-	delete settings;
-	delete song;
-	clipboard_free();
-
-	delete gui;
+	return 0;
 }
